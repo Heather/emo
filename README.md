@@ -61,7 +61,7 @@ let rec X modules_to_compile =
                 (f, n, v, true)
 let exeFiles =
     source  |> Seq.filter /> fun f -> 
-        X  |> Seq.filter /> fun (f_m, n_m, _, _) -> f.FullName = f_m
+        X   |> Seq.filter /> fun (f_m, n_m, _, _) -> f.FullName = f_m
             |> Seq.length
             |> fun fm -> fm = 0
 ```
