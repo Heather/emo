@@ -28,7 +28,7 @@ let opens, X =
     Analyze |> Seq.filter(fun (r,_,_,_) -> r = Relations.modules) 
             |> Seq.map (fun (_,f,n,v) -> (f, n, v, false)) |> Seq.toList
 let buildTasks = ref (  X  |> List.filter /> fun (_, _, _, X) -> X = false
-                            |> List.length  )
+                           |> List.length  )
 let weirdCounter = ref 0
 let rec X modules_to_compile =
     printfn "! cycle %d ->\n" !weirdCounter
