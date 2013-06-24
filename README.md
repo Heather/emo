@@ -42,8 +42,10 @@ let rec X modules_to_compile =
                     match v_o with
                     | mx when v_o.StartsWith "System" -> (v_o, "System", "System", true)
                     | mx when v_o.StartsWith "FSharp" -> (v_o, "FSharp", "FSharp", true)
-                    | _ ->  modules_to_compile |> Seq.filter /> fun (_, _, v_m, _) -> (v_m = v_o)
-                                               |> Seq.map    /> fun (f_m, f_n, _, X) -> (v_o, f_m, f_n, X)
+                    | _ ->  modules_to_compile |> Seq.filter /> fun (_, _, v_m, _) 
+                                                                 -> (v_m = v_o)
+                                               |> Seq.map    /> fun (f_m, f_n, _, X) 
+                                                                 -> (v_o, f_m, f_n, X)
                             |> fun foundModule -> if (Seq.length foundModule > 0) then
                                                     Seq.head foundModule
                                                   else (v_o, "", "", false)
