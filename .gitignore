@@ -6,3 +6,5 @@
 /*.db3
 /*.exe
 /*.cmd
+
+!emo.exe
