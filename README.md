@@ -2,8 +2,7 @@
 ---
 
  - it wants to compile every F# project without project files at all
- - to build just run run.bat
-
+ - to build just run emo.exe
 
 ``` fsharp
 let source = 

@@ -1,8 +1,35 @@
 ﻿open shelly
-open emo
 
 open System
 open System.IO
+
+Console.Clear()
+printfn "+---------------------------+"
+printfn "+  emo. version 0.0.1   T_T +"
+printfn "+---------------------------+"
+
+let mutable netpath = @"C:\Program Files\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0"
+let mscorlib    = sprintf "\"%s\\mscorlib.dll\""    netpath
+let system      = sprintf "\"%s\\System.dll\""      netpath
+let system_core = sprintf "\"%s\\System.Core.dll\"" netpath
+
+let mutable fspath = "tools\\Heather\\tools\\net40"
+let ★ = sprintf "\"%s\\fsc.exe\""         fspath
+let ☆ = sprintf "\"%s\\FSharp.Core.dll\"" fspath
+
+let n = "tools\\nuget\\nuget.exe"
+if File.Exists n then
+    let packages = [
+        "Heather", "tools\\net40\\fsc.exe", "Getting Custom F# Compiler with Unicode Support"
+        "shelly", "tools\\net40\shelly.dll", "Getting shelly"
+        "ctodo", "tools\\cctodo_100.exe", "Getting light todo list management util"
+        ]
+    for (pn, pf, pd) in packages do
+        let check = sprintf "tools\\%s\\%s" pn pf
+        if not <| File.Exists check then
+            printfn "%s" pd
+            let ☭ = sprintf "\"install\" \"%s\" \"-OutputDirectory\" \"tools\" \"-ExcludeVersion\"" pn
+            shellxn n ☭
 
 let source = 
     (new DirectoryInfo(".")).GetFiles()
@@ -56,11 +83,12 @@ let rec ♥ modules_to_compile =
                                |> fun notComiled -> notComiled = 0
             if allComiled then 
                 printfn " >>> compiling %A" n
-                let ☭ =
-                    sprintf "-o:%s.dll --noframework --optimize+ -r:%s --target:library --warn:4 --utf8output --fullpaths %s"
-                    <| n.Split('.').[0] <| ☆ <| f
-                shellxn ★ ☭
-                (f, n, v, true)
+                n.Split('.').[0] |> fun new_fn ->
+                    let ☭ =
+                        sprintf "-o:bin\\%s.dll --noframework --optimize+ -r:%s --target:library --warn:4 --utf8output --fullpaths %s"
+                        <| new_fn <| ☆ <| f
+                    shellxn ★ ☭
+                    (f, n, v, true)
             else printfn " >>> can't compile %A" f; (f, n, v, false)
         |> Seq.toList
     match ( 悪魔|> List.filter /> fun (_, _, _, ✿) -> ✿ = false
@@ -78,6 +106,8 @@ let exeFiles =
             |> fun fm -> fm = 0
 
 printfn ""
+if not <| Directory.Exists "bin" then
+    Directory.CreateDirectory "bin" |> ignore
 if Seq.length ➷ > 0 then
     printfn "-* building modules:\n"
     ♥ ➷ ; printfn ""
@@ -85,13 +115,32 @@ if Seq.length exeFiles > 0 then
     printfn "-* building executables:\n"
     exeFiles |> Seq.iter /> fun fl ->
         printfn " >>> compiling %A" fl
-        let ☭ =
-            sprintf "-o:%s.exe --noframework --optimize+ -r:%s -r:%s -r:%s -r:%s -r:%s -r:settings.dll --warn:4 --utf8output --fullpaths %s"
-            <| fl.Name.Split('.').[0] 
-            <| ☆ <| mscorlib <| system <| system_core 
-            <| "tools\\shelly\\tools\\net40\\shelly.dll"
-            <| fl.FullName
-        shellxn ★ ☭
+        fl.Name.Split('.').[0] |> fun new_fn ->
+            let ☭ =
+                sprintf "-o:bin\\%s.exe --noframework --optimize+ -r:%s -r:%s -r:%s -r:%s -r:%s --warn:4 --utf8output --fullpaths %s"
+                <| fl.Name.Split('.').[0] 
+                <| ☆ <| mscorlib <| system <| system_core 
+                <| "tools\\shelly\\tools\\net40\\shelly.dll"
+                <| fl.FullName
+            shellxn ★ ☭
     printfn ""
     printfn "! all the executables compiled"
     printfn ""
+    
+if File.Exists "TODO" then
+    printfn "-* Processing todo"
+    if not <| File.Exists "todo.cmd" then
+        printfn ""
+        printfn "! Creating todo.cmd"
+        File.WriteAllText("todo.cmd", "@echo off \n \"tools/ctodo/tools/cctodo_100.exe\" %*")
+    if File.Exists "todo.db3" then File.Delete "todo.db3"
+        
+    "todo.cmd" |> fun todo ->
+        shellxn todo "initdb"
+        shellxn todo "set git 0"
+        shellxn todo "set syncfile TODO"
+        shellxn todo "sync"
+        shellxn todo ""
+
+printfn "-* press any key to close"
+Console.ReadKey() |> ignore

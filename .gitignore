@@ -1,6 +1,8 @@
 /tools/ctodo
 /tools/Heather
+/tools/shelly
 
 /*.dll
 /*.db3
 /*.exe
+/*.cmd
