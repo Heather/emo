@@ -5,37 +5,38 @@ open System.IO
 
 Console.Clear()
 printfn "+---------------------------+"
-printfn "+  emo. version 0.0.2   T_T +"
+printfn "+  emo. version 0.0.3  ☣    +"
 printfn "+---------------------------+"
 
-let mutable netpath = @"C:\Program Files\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0"
-let mscorlib    = sprintf "\"%s\\mscorlib.dll\""    netpath
-let system      = sprintf "\"%s\\System.dll\""      netpath
-let system_core = sprintf "\"%s\\System.Core.dll\"" netpath
+let mutable ☃ = @"C:\Program Files\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0"
+let mscorlib    = sprintf "\"%s\\mscorlib.dll\""    ☃
+let system      = sprintf "\"%s\\System.dll\""      ☃
+let system_core = sprintf "\"%s\\System.Core.dll\"" ☃
 
-let mutable fspath = "tools\\Heather\\tools\\net40"
-let ★ = sprintf "\"%s\\fsc.exe\""         fspath
-let ☆ = sprintf "\"%s\\FSharp.Core.dll\"" fspath
+let mutable ☀ = "tools\\Heather\\tools\\net40"
+let ★ = sprintf "\"%s\\fsc.exe\""         ☀
+let ☆ = sprintf "\"%s\\FSharp.Core.dll\"" ☀
 
 let source = 
     (new DirectoryInfo(".")).GetFiles()
-    |> Array.filter /> fun f -> (   f.Extension = ".fs"
-                                ||  f.Extension = ".fsx")
+    |> Array.filter /> fun f -> (  f.Extension = ".fs"
+                                || f.Extension = ".fsx")
 
 let § = "tools\\nuget\\nuget.exe"
-let getPkgs pkgs =
-    for (pn, pf, pd) in pkgs do
-        let check = sprintf "tools\\%s\\%s" pn pf
-        if not <| File.Exists check then
-            printfn "%s" pd
-            let ☭ = sprintf "\"install\" \"%s\" \"-OutputDirectory\" \"tools\" \"-ExcludeVersion\"" pn
+let ☂ パッケージ =
+    for (名前, ファイル, エモ) in パッケージ do
+        let ☄ = sprintf "tools\\%s\\%s" 名前 ファイル
+        if not <| File.Exists ☄ then
+            printfn "%s" エモ
+            let ☭ = 
+                sprintf "\"install\" \"%s\" \"-OutputDirectory\" \"tools\" \"-ExcludeVersion\"" 名前
             shellxn § ☭
 if File.Exists § then
-    getPkgs [
+    ☂ [
         yield "Heather", "tools\\net40\\fsc.exe", "Getting Custom F# Compiler with Unicode Support"
         if File.Exists "TODO" then
             yield "ctodo", "tools\\cctodo_100.exe", "Getting light todo list management util"
-        ]
+       ]
 
 type Relations =
     | opens = 0
@@ -46,11 +47,12 @@ let mutable packages =
     |]
     
 let opens, ➷ =
-    let Analyze =
+    printfn "-* code analyse\n"
+    let ☎ =
         [for f in source do
-            use tx = f.OpenText()
-            while not tx.EndOfStream do
-                match ( tx.ReadLine() ).TrimStart() with
+            use 끈 = f.OpenText()
+            while not 끈.EndOfStream do
+                match ( 끈.ReadLine() ).TrimStart() with
                 | line when line.StartsWith("open ") ->
                     let split = line.Split([| "open " |], StringSplitOptions.None)
                     if split.Length > 1 then
@@ -61,14 +63,13 @@ let opens, ➷ =
                         yield (Relations.modules, f.FullName, f.Name, split.[1])
                 | line -> (* Additional analyse *)
                     packages 
-                    |> Array.filter /> fun (_,_,_,_,pe) -> not pe
+                    |> Array.filter /> fun (_,_,_,_,✲) -> not ✲
                     |> Array.iteri /> fun i (pn,pf,pm,pc,_) ->
                         if line.Contains(pc) then
                             packages.[i] <- (pn,pf,pm,pc,true)
-                            getPkgs [ (pn, pf, pm) ] ]
-    printfn "-* code analyse\n"
-    Analyze |> Seq.filter(fun (r,_,_,_) -> r = Relations.opens)   |> Seq.map (fun (_,f,n,v) -> (f, n, v))        |> Seq.toList ,
-    Analyze |> Seq.filter(fun (r,_,_,_) -> r = Relations.modules) |> Seq.map (fun (_,f,n,v) -> (f, n, v, false)) |> Seq.toList
+                            ☂ [ (pn, pf, pm) ] ]
+    ☎ |> Seq.filter(fun (☤,_,_,_) -> ☤ = Relations.opens)   |> Seq.map (fun (_,f,n,v) -> (f, n, v))        |> Seq.toList ,
+    ☎ |> Seq.filter(fun (☤,_,_,_) -> ☤ = Relations.modules) |> Seq.map (fun (_,f,n,v) -> (f, n, v, false)) |> Seq.toList
 
 let buildTasks = ref (  ➷  |> List.filter /> fun (_, _, _, ✿) -> not ✿
                             |> List.length  )
@@ -79,29 +80,29 @@ let rec ♥ modules_to_compile =
         modules_to_compile
         |> List.filter /> fun (_, _, _, ✿) -> not ✿
         |> List.map /> fun (f, n, v, _) -> 
-            let moduleOpens = opens |> List.filter /> fun (f_o, _, _) -> (f_o = f)
-            let checkCompiled = 
-                moduleOpens |> Seq.map /> fun (_, _, v_o) ->
+            let ☯ = opens |> List.filter /> fun (f_o, _, _) -> (f_o = f)
+            let ✤ = 
+                ☯ |> Seq.map /> fun (_, _, v_o) ->
                     match v_o with
-                    | mx when v_o.StartsWith "System" -> (v_o, "System", "System", true)
-                    | mx when v_o.StartsWith "FSharp" -> (v_o, "FSharp", "FSharp", true)
+                    | ✈ when v_o.StartsWith "System" -> (v_o, "System", "System", true)
+                    | ✈ when v_o.StartsWith "FSharp" -> (v_o, "FSharp", "FSharp", true)
                     | _ ->  modules_to_compile |> Seq.filter /> fun (_, _, v_m, _) -> (v_m = v_o)
                                                |> Seq.map    /> fun (f_m, f_n, _, ✿) -> (v_o, f_m, f_n, ✿)
                             |> fun foundModule -> if (Seq.length foundModule > 0) then
                                                     Seq.head foundModule
                                                   else (v_o, "", "", false)
-            let allComiled = checkCompiled
+            let allComiled =   ✤
                                |> Seq.filter /> fun (_, _, _, ✿) -> not ✿
                                |> Seq.length
-                               |> fun notComiled -> notComiled = 0
+                               |> fun ✖ -> ✖ = 0
             if allComiled then 
                 printfn " >>> compiling %A" n
-                n.Split('.').[0] |> fun new_fn ->
+                n.Split('.').[0] |> fun ☢ ->
                     let ☭ =
                         sprintf "-o:bin\\%s.dll --noframework --optimize+ -r:%s %s --target:library --warn:4 --utf8output --fullpaths %s"
-                        <| new_fn <| ☆ 
+                        <| ☢ <| ☆ 
                         <| String.Join(" ",
-                            [for (_, _, f_n, _) in checkCompiled ->
+                            [for (_, _, f_n, _) in ✤ ->
                                 sprintf "-r:%s.dll" <| f_n.Split('.').[0]
                                 ])
                         <| f
@@ -120,7 +121,7 @@ let exeFiles =
     source  |> Seq.filter /> fun f -> 
         ➷  |> Seq.filter /> fun (f_m, n_m, _, _) -> f.FullName = f_m
             |> Seq.length
-            |> fun fm -> fm = 0
+            |> fun ✦ -> ✦ = 0
 
 printfn ""
 if not <| Directory.Exists "bin" then
@@ -132,11 +133,11 @@ if Seq.length exeFiles > 0 then
     printfn "-* building executables:\n"
     exeFiles |> Seq.iter /> fun fl ->
         printfn " >>> compiling %A" fl
-        fl.Name.Split('.').[0] |> fun new_fn ->
+        fl.Name.Split('.').[0] |> fun ☢ ->
             let ☭ =
                 sprintf "-o:bin\\%s.exe --noframework --optimize+ -r:%s -r:%s -r:%s -r:%s %s %s --warn:4 --utf8output --fullpaths %s"
-                <| fl.Name.Split('.').[0] 
-                <| ☆ <| mscorlib <| system <| system_core
+                <| ☢ <| ☆
+                <| mscorlib <| system <| system_core
                 <| String.Join(" ",
                     [for (pn, pf, _, _, need) in packages do
                         if need then 
@@ -161,12 +162,12 @@ if File.Exists "TODO" then
         File.WriteAllText("todo.cmd", "@echo off \n \"tools/ctodo/tools/cctodo_100.exe\" %*")
     if File.Exists "todo.db3" then File.Delete "todo.db3"
         
-    "todo.cmd" |> fun todo ->
-        shellxn todo "initdb"
-        shellxn todo "set git 0"
-        shellxn todo "set syncfile TODO"
-        shellxn todo "sync"
-        shellxn todo ""
+    "todo.cmd" |> fun ☠ ->
+        shellxn ☠ "initdb"
+        shellxn ☠ "set git 0"
+        shellxn ☠ "set syncfile TODO"
+        shellxn ☠ "sync"
+        shellxn ☠ ""
 
 printfn "-* press any key to close"
 Console.ReadKey() |> ignore
