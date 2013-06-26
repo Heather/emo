@@ -5,7 +5,7 @@ open System.IO
 
 Console.Clear()
 printfn "+---------------------------+"
-printfn "+  emo. version 0.0.1   T_T +"
+printfn "+  emo. version 0.0.2   T_T +"
 printfn "+---------------------------+"
 
 let mutable netpath = @"C:\Program Files\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0"
@@ -17,54 +17,67 @@ let mutable fspath = "tools\\Heather\\tools\\net40"
 let ★ = sprintf "\"%s\\fsc.exe\""         fspath
 let ☆ = sprintf "\"%s\\FSharp.Core.dll\"" fspath
 
-let n = "tools\\nuget\\nuget.exe"
-if File.Exists n then
-    let packages = [
-        "Heather", "tools\\net40\\fsc.exe", "Getting Custom F# Compiler with Unicode Support"
-        "shelly", "tools\\net40\shelly.dll", "Getting shelly"
-        "ctodo", "tools\\cctodo_100.exe", "Getting light todo list management util"
-        ]
-    for (pn, pf, pd) in packages do
-        let check = sprintf "tools\\%s\\%s" pn pf
-        if not <| File.Exists check then
-            printfn "%s" pd
-            let ☭ = sprintf "\"install\" \"%s\" \"-OutputDirectory\" \"tools\" \"-ExcludeVersion\"" pn
-            shellxn n ☭
-
 let source = 
     (new DirectoryInfo(".")).GetFiles()
     |> Array.filter /> fun f -> (   f.Extension = ".fs"
                                 ||  f.Extension = ".fsx")
 
+let § = "tools\\nuget\\nuget.exe"
+let getPkgs pkgs =
+    for (pn, pf, pd) in pkgs do
+        let check = sprintf "tools\\%s\\%s" pn pf
+        if not <| File.Exists check then
+            printfn "%s" pd
+            let ☭ = sprintf "\"install\" \"%s\" \"-OutputDirectory\" \"tools\" \"-ExcludeVersion\"" pn
+            shellxn § ☭
+if File.Exists § then
+    getPkgs [
+        yield "Heather", "tools\\net40\\fsc.exe", "Getting Custom F# Compiler with Unicode Support"
+        if File.Exists "TODO" then
+            yield "ctodo", "tools\\cctodo_100.exe", "Getting light todo list management util"
+        ]
+
 type Relations =
     | opens = 0
     | modules = 1
 
+let mutable packages =
+    [|  "shelly", "tools\\net40\shelly.dll", "Getting shelly", "shellxn", false
+    |]
+    
 let opens, ➷ =
     let Analyze =
         [for f in source do
             use tx = f.OpenText()
             while not tx.EndOfStream do
-                let line = ( tx.ReadLine() ).TrimStart()
-                if line.StartsWith("open ") then
+                match ( tx.ReadLine() ).TrimStart() with
+                | line when line.StartsWith("open ") ->
                     let split = line.Split([| "open " |], StringSplitOptions.None)
                     if split.Length > 1 then
                         yield (Relations.opens, f.FullName, f.Name, split.[1])
-                else if line.StartsWith("module ") then
+                | line when line.StartsWith("module ") ->
                     let split = line.Split([| "module " |], StringSplitOptions.None)
                     if split.Length > 1 then
-                        yield (Relations.modules, f.FullName, f.Name, split.[1])]
+                        yield (Relations.modules, f.FullName, f.Name, split.[1])
+                | line -> (* Additional analyse *)
+                    packages 
+                    |> Array.filter /> fun (_,_,_,_,pe) -> not pe
+                    |> Array.iteri /> fun i (pn,pf,pm,pc,_) ->
+                        if line.Contains(pc) then
+                            packages.[i] <- (pn,pf,pm,pc,true)
+                            getPkgs [ (pn, pf, pm) ] ]
+    printfn "-* code analyse\n"
     Analyze |> Seq.filter(fun (r,_,_,_) -> r = Relations.opens)   |> Seq.map (fun (_,f,n,v) -> (f, n, v))        |> Seq.toList ,
     Analyze |> Seq.filter(fun (r,_,_,_) -> r = Relations.modules) |> Seq.map (fun (_,f,n,v) -> (f, n, v, false)) |> Seq.toList
 
-let buildTasks = ref (  ➷  |> List.filter /> fun (_, _, _, ✿) -> ✿ = false
+let buildTasks = ref (  ➷  |> List.filter /> fun (_, _, _, ✿) -> not ✿
                             |> List.length  )
 let weirdCounter = ref 0
 let rec ♥ modules_to_compile =
     printfn "! cycle %d ->\n" !weirdCounter
     let 悪魔 = 
         modules_to_compile
-        |> List.filter /> fun (_, _, _, ✿) -> ✿ = false
+        |> List.filter /> fun (_, _, _, ✿) -> not ✿
         |> List.map /> fun (f, n, v, _) -> 
             let moduleOpens = opens |> List.filter /> fun (f_o, _, _) -> (f_o = f)
             let checkCompiled = 
@@ -78,20 +91,24 @@ let rec ♥ modules_to_compile =
                                                     Seq.head foundModule
                                                   else (v_o, "", "", false)
             let allComiled = checkCompiled
-                               |> Seq.filter /> fun (_, _, _, ✿) -> ✿ = false
+                               |> Seq.filter /> fun (_, _, _, ✿) -> not ✿
                                |> Seq.length
                                |> fun notComiled -> notComiled = 0
             if allComiled then 
                 printfn " >>> compiling %A" n
                 n.Split('.').[0] |> fun new_fn ->
                     let ☭ =
-                        sprintf "-o:bin\\%s.dll --noframework --optimize+ -r:%s --target:library --warn:4 --utf8output --fullpaths %s"
-                        <| new_fn <| ☆ <| f
-                    shellxn ★ ☭
-                    (f, n, v, true)
+                        sprintf "-o:bin\\%s.dll --noframework --optimize+ -r:%s %s --target:library --warn:4 --utf8output --fullpaths %s"
+                        <| new_fn <| ☆ 
+                        <| String.Join(" ",
+                            [for (_, _, f_n, _) in checkCompiled ->
+                                sprintf "-r:%s.dll" <| f_n.Split('.').[0]
+                                ])
+                        <| f
+                    shellxn ★ ☭; (f, n, v, true)
             else printfn " >>> can't compile %A" f; (f, n, v, false)
         |> Seq.toList
-    match ( 悪魔|> List.filter /> fun (_, _, _, ✿) -> ✿ = false
+    match ( 悪魔|> List.filter /> fun (_, _, _, ✿) -> not ✿
                 |> List.length ) with
     | 0 -> printfn "\n! all the modules compiled"
     | mx when mx = !buildTasks -> printfn "\n! can't compile modules"
@@ -117,10 +134,19 @@ if Seq.length exeFiles > 0 then
         printfn " >>> compiling %A" fl
         fl.Name.Split('.').[0] |> fun new_fn ->
             let ☭ =
-                sprintf "-o:bin\\%s.exe --noframework --optimize+ -r:%s -r:%s -r:%s -r:%s -r:%s --warn:4 --utf8output --fullpaths %s"
+                sprintf "-o:bin\\%s.exe --noframework --optimize+ -r:%s -r:%s -r:%s -r:%s %s %s --warn:4 --utf8output --fullpaths %s"
                 <| fl.Name.Split('.').[0] 
-                <| ☆ <| mscorlib <| system <| system_core 
-                <| "tools\\shelly\\tools\\net40\\shelly.dll"
+                <| ☆ <| mscorlib <| system <| system_core
+                <| String.Join(" ",
+                    [for (pn, pf, _, _, need) in packages do
+                        if need then 
+                            let file = sprintf "tools\\%s\\%s" pn pf
+                            yield sprintf "-r:%s" <| file
+                        ])
+                <| String.Join(" ",
+                    [for (_, f_n, _, _) in ➷ ->
+                        sprintf "-r:%s.dll" <| f_n.Split('.').[0]
+                        ])
                 <| fl.FullName
             shellxn ★ ☭
     printfn ""
