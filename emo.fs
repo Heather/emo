@@ -4,18 +4,24 @@ open System
 open System.IO
 
 Console.Clear()
-printfn "+---------------------------+"
-printfn "+  emo. version 0.0.3  ☣    +"
-printfn "+---------------------------+"
+
+    (* Some dictionary *)
+let ✓ s args = sprintf s args
+let ✞ s args = shellxn s args
+let ❂ ssargs = printfn ssargs
+
+❂ "+---------------------------+"
+❂ "+  emo. version 0.0.5  ☣    +"
+❂ "+---------------------------+"
 
 let mutable ☃ = @"C:\Program Files\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0"
-let mscorlib    = sprintf "\"%s\\mscorlib.dll\""    ☃
-let system      = sprintf "\"%s\\System.dll\""      ☃
-let system_core = sprintf "\"%s\\System.Core.dll\"" ☃
+let mscorlib    = ✓ "\"%s\\mscorlib.dll\""    ☃
+let system      = ✓ "\"%s\\System.dll\""      ☃
+let system_core = ✓ "\"%s\\System.Core.dll\"" ☃
 
 let mutable ☀ = "tools\\Heather\\tools\\net40"
-let ★ = sprintf "\"%s\\fsc.exe\""         ☀
-let ☆ = sprintf "\"%s\\FSharp.Core.dll\"" ☀
+let ★ = ✓ "\"%s\\fsc.exe\""         ☀
+let ☆ = ✓ "\"%s\\FSharp.Core.dll\"" ☀
 
 let source = 
     (new DirectoryInfo(".")).GetFiles()
@@ -23,20 +29,21 @@ let source =
                                 || f.Extension = ".fsx")
 
 let § = "tools\\nuget\\nuget.exe"
-let ☂ パッケージ =
-    for (名前, ファイル, エモ) in パッケージ do
-        let ☄ = sprintf "tools\\%s\\%s" 名前 ファイル
+let ☂ pkgs =
+    for (pn, pf, pd) in pkgs do
+        let ☄ = ✓ "tools\\%s\\%s" pn pf
         if not <| File.Exists ☄ then
-            printfn "%s" エモ
-            let ☭ = 
-                sprintf "\"install\" \"%s\" \"-OutputDirectory\" \"tools\" \"-ExcludeVersion\"" 名前
-            shellxn § ☭
+            ❂ "%s" pd
+            ✞ § (✓ "\"install\" \"%s\" \"-OutputDirectory\" \"tools\" \"-ExcludeVersion\"" pn)
 if File.Exists § then
-    ☂ [
-        yield "Heather", "tools\\net40\\fsc.exe", "Getting Custom F# Compiler with Unicode Support"
+    ☂ [ yield "Heather", "tools\\net40\\fsc.exe", "Getting Custom F# Compiler with Unicode Support"
         if File.Exists "TODO" then
-            yield "ctodo", "tools\\cctodo_100.exe", "Getting light todo list management util"
-       ]
+            yield "ctodo", "tools\\cctodo_100.exe", "Getting light todo list management util" ]
+Environment.GetEnvironmentVariable("ProgramFiles") |> fun programFiles -> (* Moving from F# 3.0 to F# 3.1 is hard... *)
+    ✓ @"%s\Reference Assemblies\Microsoft\FSharp\.NETFramework\v4.0\4.3.0.0\FSharp.Core.dll" programFiles
+    |> fun newCore -> if File.Exists newCore then 
+                        ❂ "-* Replacing 3.0 FSharp.Core.dll with 3.1 one\n"
+                        File.Copy(newCore, "tools\\Heather\\tools\\net40\\FSharp.Core.dll", true)
 
 type Relations =
     | opens = 0
@@ -47,12 +54,12 @@ let mutable packages =
     |]
     
 let opens, ➷ =
-    printfn "-* code analyse\n"
+    ❂ "-* code analyse\n"
     let ☎ =
         [for f in source do
-            use 끈 = f.OpenText()
-            while not 끈.EndOfStream do
-                match ( 끈.ReadLine() ).TrimStart() with
+            use tx = f.OpenText()
+            while not tx.EndOfStream do
+                match ( tx.ReadLine() ).TrimStart() with
                 | line when line.StartsWith("open ") ->
                     let split = line.Split([| "open " |], StringSplitOptions.None)
                     if split.Length > 1 then
@@ -75,7 +82,7 @@ let buildTasks = ref (  ➷  |> List.filter /> fun (_, _, _, ✿) -> not ✿
                             |> List.length  )
 let weirdCounter = ref 0
 let rec ♥ modules_to_compile =
-    printfn "! cycle %d ->\n" !weirdCounter
+    ❂ "! cycle %d ->\n" !weirdCounter
     let 悪魔 = 
         modules_to_compile
         |> List.filter /> fun (_, _, _, ✿) -> not ✿
@@ -96,25 +103,25 @@ let rec ♥ modules_to_compile =
                                |> Seq.length
                                |> fun ✖ -> ✖ = 0
             if allComiled then 
-                printfn " >>> compiling %A" n
+                ❂ " >>> compiling %A" n
                 n.Split('.').[0] |> fun ☢ ->
                     let ☭ =
-                        sprintf "-o:bin\\%s.dll --noframework --optimize+ -r:%s %s --target:library --warn:4 --utf8output --fullpaths %s"
+                        ✓ "-o:bin\\%s.dll --noframework --optimize+ -r:%s %s --target:library --warn:4 --utf8output --fullpaths %s"
                         <| ☢ <| ☆ 
                         <| String.Join(" ",
                             [for (_, _, f_n, _) in ✤ ->
-                                sprintf "-r:%s.dll" <| f_n.Split('.').[0]
+                                ✓ "-r:%s.dll" <| f_n.Split('.').[0]
                                 ])
                         <| f
-                    shellxn ★ ☭; (f, n, v, true)
-            else printfn " >>> can't compile %A" f; (f, n, v, false)
+                    ✞ ★ ☭; (f, n, v, true)
+            else ❂ " >>> can't compile %A" f; (f, n, v, false)
         |> Seq.toList
     match ( 悪魔|> List.filter /> fun (_, _, _, ✿) -> not ✿
                 |> List.length ) with
-    | 0 -> printfn "\n! all the modules compiled"
-    | mx when mx = !buildTasks -> printfn "\n! can't compile modules"
+    | 0 -> ❂ "\n! all the modules compiled"
+    | mx when mx = !buildTasks -> ❂ "\n! can't compile modules"
     | mx -> weirdCounter := !weirdCounter + 1
-            printfn "\n! compiled %d modules" (!buildTasks - mx)
+            ❂ "\n! compiled %d modules" (!buildTasks - mx)
             buildTasks := mx ; ♥ 悪魔
 
 let exeFiles =
@@ -123,51 +130,49 @@ let exeFiles =
             |> Seq.length
             |> fun ✦ -> ✦ = 0
 
-printfn ""
+❂ ""
 if not <| Directory.Exists "bin" then
     Directory.CreateDirectory "bin" |> ignore
-if Seq.length ➷ > 0 then
-    printfn "-* building modules:\n"
-    ♥ ➷ ; printfn ""
+if Seq.length ➷ > 0 then ❂ "-* building modules:\n"; ♥ ➷ ; ❂ ""
 if Seq.length exeFiles > 0 then
-    printfn "-* building executables:\n"
+    ❂ "-* building executables:\n"
     exeFiles |> Seq.iter /> fun fl ->
-        printfn " >>> compiling %A" fl
+        ❂ " >>> compiling %A" fl
         fl.Name.Split('.').[0] |> fun ☢ ->
             let ☭ =
-                sprintf "-o:bin\\%s.exe --noframework --optimize+ -r:%s -r:%s -r:%s -r:%s %s %s --warn:4 --utf8output --fullpaths %s"
+                ✓ "-o:bin\\%s.exe --noframework --optimize+ -r:%s -r:%s -r:%s -r:%s %s %s --warn:4 --utf8output --fullpaths %s"
                 <| ☢ <| ☆
                 <| mscorlib <| system <| system_core
                 <| String.Join(" ",
                     [for (pn, pf, _, _, need) in packages do
                         if need then 
-                            let file = sprintf "tools\\%s\\%s" pn pf
-                            yield sprintf "-r:%s" <| file
+                            let file = ✓ "tools\\%s\\%s" pn pf
+                            yield ✓ "-r:%s" <| file
                         ])
                 <| String.Join(" ",
                     [for (_, f_n, _, _) in ➷ ->
-                        sprintf "-r:%s.dll" <| f_n.Split('.').[0]
+                        ✓ "-r:%s.dll" <| f_n.Split('.').[0]
                         ])
                 <| fl.FullName
-            shellxn ★ ☭
-    printfn ""
-    printfn "! all the executables compiled"
-    printfn ""
+            ✞ ★ ☭
+    ❂ ""
+    ❂ "! all the executables compiled"
+    ❂ ""
     
 if File.Exists "TODO" then
-    printfn "-* Processing todo"
+    ❂ "-* Processing todo"
     if not <| File.Exists "todo.cmd" then
-        printfn ""
-        printfn "! Creating todo.cmd"
+        ❂ ""
+        ❂ "! Creating todo.cmd"
         File.WriteAllText("todo.cmd", "@echo off \n \"tools/ctodo/tools/cctodo_100.exe\" %*")
     if File.Exists "todo.db3" then File.Delete "todo.db3"
         
-    "todo.cmd" |> fun ☠ ->
-        shellxn ☠ "initdb"
-        shellxn ☠ "set git 0"
-        shellxn ☠ "set syncfile TODO"
-        shellxn ☠ "sync"
-        shellxn ☠ ""
+    ✞ "todo.cmd" |> fun ☠ ->
+        ☠ "initdb"
+        ☠ "set git 0"
+        ☠ "set syncfile TODO"
+        ☠ "sync"
+        ☠ ""
 
-printfn "-* press any key to close"
+❂ "-* press any key to close"
 Console.ReadKey() |> ignore
