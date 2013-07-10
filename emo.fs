@@ -11,7 +11,7 @@ let ✞ s args = shellxn s args
 let ❂ ssargs = printfn ssargs
 
 ❂ "+---------------------------+"
-❂ "+  emo. version 0.0.5  ☣    +"
+❂ "+  emo. version 0.0.6  ☣    +"
 ❂ "+---------------------------+"
 
 let mutable ☃ = @"C:\Program Files\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0"
@@ -20,8 +20,9 @@ let system      = ✓ "\"%s\\System.dll\""      ☃
 let system_core = ✓ "\"%s\\System.Core.dll\"" ☃
 
 let mutable ☀ = "tools\\Heather\\tools\\net40"
-let ★ = ✓ "\"%s\\fsc.exe\""         ☀
-let ☆ = ✓ "\"%s\\FSharp.Core.dll\"" ☀
+let ★   = ✓ "\"%s\\fsc.exe\""           ☀
+let ☆   = ✓ "\"%s\\FSharp.Core.dll\""   ☀
+let ★★  = ✓ "\"%s\\fsi.exe\""           ☀
 
 let source = 
     (new DirectoryInfo(".")).GetFiles()
@@ -91,8 +92,11 @@ let rec ♥ modules_to_compile =
             let ✤ = 
                 ☯ |> Seq.map /> fun (_, _, v_o) ->
                     match v_o with
-                    | ✈ when v_o.StartsWith "System" -> (v_o, "System", "System", true)
-                    | ✈ when v_o.StartsWith "FSharp" -> (v_o, "FSharp", "FSharp", true)
+                    | ✈ when v_o.StartsWith "System" ->  (v_o, "System", "System", true)
+                    | ✈ when v_o.StartsWith "FSharp" ->  (v_o, "FSharp", "FSharp", true)
+                    | ✈ when v_o.StartsWith "Failess" -> 
+                        ☂ [ ("Failess", "tools\\Failess.exe", "Failess build tool with CSS EDSL library") ]
+                        (v_o, "Failess", "tools\\Failess\\tools\\FailessLib.dll", true)
                     | _ ->  modules_to_compile |> Seq.filter /> fun (_, _, v_m, _) -> (v_m = v_o)
                                                |> Seq.map    /> fun (f_m, f_n, _, ✿) -> (v_o, f_m, f_n, ✿)
                             |> fun foundModule -> if (Seq.length foundModule > 0) then
@@ -129,12 +133,33 @@ let exeFiles =
         ➷  |> Seq.filter /> fun (f_m, n_m, _, _) -> f.FullName = f_m
             |> Seq.length
             |> fun ✦ -> ✦ = 0
+            
+let fakeFiles =
+    exeFiles |> Seq.filter /> fun f -> f.Extension = ".fsx"
+             |> Seq.filter /> fun f ->
+                use tx = f.OpenText()
+                [while not tx.EndOfStream do
+                    match ( tx.ReadLine() ).TrimStart() with
+                    | line when line.StartsWith("Target ") -> yield true
+                    | _ -> yield false] 
+                |> Seq.length
+                |> fun ✦ -> ✦ > 0
 
 ❂ ""
 if not <| Directory.Exists "bin" then
     Directory.CreateDirectory "bin" |> ignore
 if Seq.length ➷ > 0 then ❂ "-* building modules:\n"; ♥ ➷ ; ❂ ""
-if Seq.length exeFiles > 0 then
+
+if Seq.length fakeFiles > 0 then
+    fakeFiles |> Seq.iter /> fun fl ->
+    let ☭ = ✓ "FSI=%s %s" ★★ fl.FullName
+    Environment.GetEnvironmentVariable("ProgramFiles") |> fun programFiles -> (* Moving from F# 3.0 to F# 3.1 is hard... *)
+        ✓ @"%s\Reference Assemblies\Microsoft\FSharp\.NETFramework\v4.0\4.3.0.0\FSharp.Core.dll" programFiles
+        |> fun newCore -> if File.Exists newCore then 
+                            ❂ "-* Replacing 3.0 FSharp.Core.dll with 3.1 one\n"
+                            File.Copy(newCore, "tools\\Failess\\tools\\FSharp.Core.dll", true)
+    ✞ "tools\\Failess\\tools\\Failess.exe" ☭
+else if Seq.length exeFiles > 0 then
     ❂ "-* building executables:\n"
     exeFiles |> Seq.iter /> fun fl ->
         ❂ " >>> compiling %A" fl
@@ -162,7 +187,6 @@ if Seq.length exeFiles > 0 then
 if File.Exists "TODO" then
     ❂ "-* Processing todo"
     if not <| File.Exists "todo.cmd" then
-        ❂ ""
         ❂ "! Creating todo.cmd"
         File.WriteAllText("todo.cmd", "@echo off \n \"tools/ctodo/tools/cctodo_100.exe\" %*")
     if File.Exists "todo.db3" then File.Delete "todo.db3"
