@@ -10,41 +10,50 @@ let ✓ s args = sprintf s args
 let ✞ s args = shellxn s args
 let ❂ ssargs = printfn ssargs
 
+let mutable debug = true
+
 ❂ "+---------------------------+"
-❂ "+  emo. version 0.0.6  ☣    +"
+❂ "+     emo. version 0.0.7    +"
 ❂ "+---------------------------+"
+
+let start = AppDomain.CurrentDomain.BaseDirectory
 
 let mutable ☃ = @"C:\Program Files\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0"
 let mscorlib    = ✓ "\"%s\\mscorlib.dll\""    ☃
 let system      = ✓ "\"%s\\System.dll\""      ☃
 let system_core = ✓ "\"%s\\System.Core.dll\"" ☃
 
-let mutable ☀ = "tools\\Heather\\tools\\net40"
+let mutable ☀ = ✓ "%s\\..\\..\\Heather\\tools\\net40" start
 let ★   = ✓ "\"%s\\fsc.exe\""           ☀
 let ☆   = ✓ "\"%s\\FSharp.Core.dll\""   ☀
 let ★★  = ✓ "\"%s\\fsi.exe\""           ☀
 
 let source = 
-    (new DirectoryInfo(".")).GetFiles()
+    (new DirectoryInfo( ✓ "%s\\..\\..\\.." start )).GetFiles()
     |> Array.filter /> fun f -> (  f.Extension = ".fs"
                                 || f.Extension = ".fsx")
 
-let § = "tools\\nuget\\nuget.exe"
+let § = ✓ "\"%s..\\..\\nuget\\nuget.exe\"" start
 let ☂ pkgs =
     for (pn, pf, pd) in pkgs do
-        let ☄ = ✓ "tools\\%s\\%s" pn pf
-        if not <| File.Exists ☄ then
+        if debug then printfn "check if %s exists" pf
+        if ((not <| File.Exists ( ✓ "..\\..\\%s\\%s" pn pf )) &&
+            (not <| File.Exists ( ✓ "tools\\%s\\%s" pn pf ) ) ) then
             ❂ "%s" pd
-            ✞ § (✓ "\"install\" \"%s\" \"-OutputDirectory\" \"tools\" \"-ExcludeVersion\"" pn)
-if File.Exists § then
+            (✓ "\"install\" \"%s\" \"-OutputDirectory\" \"%s\\..\\..\" \"-ExcludeVersion\"" pn start)
+            |> fun ☄ ->
+                if debug then ❂ "> %s" ☄
+                ✞ § ☄
+if File.Exists "..\\..\\nuget\\nuget.exe" || File.Exists "tools\\nuget\\nuget.exe" then
     ☂ [ yield "Heather", "tools\\net40\\fsc.exe", "Getting Custom F# Compiler with Unicode Support"
         if File.Exists "TODO" then
             yield "ctodo", "tools\\cctodo_100.exe", "Getting light todo list management util" ]
+else ❂ "No NuGet found on %s" §
 Environment.GetEnvironmentVariable("ProgramFiles") |> fun programFiles -> (* Moving from F# 3.0 to F# 3.1 is hard... *)
     ✓ @"%s\Reference Assemblies\Microsoft\FSharp\.NETFramework\v4.0\4.3.0.0\FSharp.Core.dll" programFiles
     |> fun newCore -> if File.Exists newCore then 
                         ❂ "-* Replacing 3.0 FSharp.Core.dll with 3.1 one\n"
-                        File.Copy(newCore, "tools\\Heather\\tools\\net40\\FSharp.Core.dll", true)
+                        File.Copy(newCore, (✓ "%s\\..\\..\\Heather\\tools\\net40\\FSharp.Core.dll" start), true)
 
 type Relations =
     | opens = 0
@@ -95,8 +104,8 @@ let rec ♥ modules_to_compile =
                     | ✈ when v_o.StartsWith "System" ->  (v_o, "System", "System", true)
                     | ✈ when v_o.StartsWith "FSharp" ->  (v_o, "FSharp", "FSharp", true)
                     | ✈ when v_o.StartsWith "Failess" -> 
-                        ☂ [ ("Failess", "tools\\Failess.exe", "Failess build tool with CSS EDSL library") ]
-                        (v_o, "Failess", "tools\\Failess\\tools\\FailessLib.dll", true)
+                        ☂ [ ("Failess", (✓ "%s\\..\\..\\Failess.exe" start), "Failess build tool with CSS EDSL library") ]
+                        (v_o, "Failess", (✓ "%s\\..\\..\\Failess\\tools\\FailessLib.dll" start), true)
                     | _ ->  modules_to_compile |> Seq.filter /> fun (_, _, v_m, _) -> (v_m = v_o)
                                                |> Seq.map    /> fun (f_m, f_n, _, ✿) -> (v_o, f_m, f_n, ✿)
                             |> fun foundModule -> if (Seq.length foundModule > 0) then
@@ -110,13 +119,15 @@ let rec ♥ modules_to_compile =
                 ❂ " >>> compiling %A" n
                 n.Split('.').[0] |> fun ☢ ->
                     let ☭ =
-                        ✓ "-o:bin\\%s.dll --noframework --optimize+ -r:%s %s --target:library --warn:4 --utf8output --fullpaths %s"
+                        ✓ "-o:%s\\..\\..\\..\\bin\\%s.dll --noframework --optimize+ -r:%s %s --target:library --warn:4 --utf8output --fullpaths %s"
+                        <| start
                         <| ☢ <| ☆ 
                         <| String.Join(" ",
                             [for (_, _, f_n, _) in ✤ ->
                                 ✓ "-r:%s.dll" <| f_n.Split('.').[0]
                                 ])
                         <| f
+                    if debug then ❂ "> %s" ☭
                     ✞ ★ ☭; (f, n, v, true)
             else ❂ " >>> can't compile %A" f; (f, n, v, false)
         |> Seq.toList
@@ -146,8 +157,8 @@ let fakeFiles =
                 |> fun ✦ -> ✦ > 0
 
 ❂ ""
-if not <| Directory.Exists "bin" then
-    Directory.CreateDirectory "bin" |> ignore
+if not <| Directory.Exists ( ✓ "%s\\..\\..\\..\\bin" start ) then
+    Directory.CreateDirectory ( ✓ "%s\\..\\..\\..\\bin" start) |> ignore
 if Seq.length ➷ > 0 then ❂ "-* building modules:\n"; ♥ ➷ ; ❂ ""
 
 if Seq.length fakeFiles > 0 then
@@ -157,21 +168,22 @@ if Seq.length fakeFiles > 0 then
         ✓ @"%s\Reference Assemblies\Microsoft\FSharp\.NETFramework\v4.0\4.3.0.0\FSharp.Core.dll" programFiles
         |> fun newCore -> if File.Exists newCore then 
                             ❂ "-* Replacing 3.0 FSharp.Core.dll with 3.1 one\n"
-                            File.Copy(newCore, "tools\\Failess\\tools\\FSharp.Core.dll", true)
-    ✞ "tools\\Failess\\tools\\Failess.exe" ☭
+                            File.Copy(newCore, ( ✓ "%s\\..\\..\\Failess\\tools\\FSharp.Core.dll" start), true)
+    ✞ ( ✓ "%s\\..\\..\\Failess\\tools\\Failess.exe" start ) ☭
 else if Seq.length exeFiles > 0 then
     ❂ "-* building executables:\n"
     exeFiles |> Seq.iter /> fun fl ->
         ❂ " >>> compiling %A" fl
         fl.Name.Split('.').[0] |> fun ☢ ->
             let ☭ =
-                ✓ "-o:bin\\%s.exe --noframework --optimize+ -r:%s -r:%s -r:%s -r:%s %s %s --warn:4 --utf8output --fullpaths %s"
+                ✓ "-o:%s\\..\\..\\..\\bin\\%s.exe --noframework --optimize+ -r:%s -r:%s -r:%s -r:%s %s %s --warn:4 --utf8output --fullpaths %s"
+                <| start
                 <| ☢ <| ☆
                 <| mscorlib <| system <| system_core
                 <| String.Join(" ",
                     [for (pn, pf, _, _, need) in packages do
                         if need then 
-                            let file = ✓ "tools\\%s\\%s" pn pf
+                            let file = ✓ "%s\\..\\..\\%s\\%s" start pn pf
                             yield ✓ "-r:%s" <| file
                         ])
                 <| String.Join(" ",
@@ -179,6 +191,7 @@ else if Seq.length exeFiles > 0 then
                         ✓ "-r:%s.dll" <| f_n.Split('.').[0]
                         ])
                 <| fl.FullName
+            if debug then ❂ "> %s" ☭
             ✞ ★ ☭
     ❂ ""
     ❂ "! all the executables compiled"
@@ -186,17 +199,24 @@ else if Seq.length exeFiles > 0 then
     
 if File.Exists "TODO" then
     ❂ "-* Processing todo"
-    if not <| File.Exists "todo.cmd" then
+    if not <| File.Exists ( ✓ "%s\\..\\..\\..\\todo.cmd" start ) then
         ❂ "! Creating todo.cmd"
-        File.WriteAllText("todo.cmd", "@echo off \n \"tools/ctodo/tools/cctodo_100.exe\" %*")
-    if File.Exists "todo.db3" then File.Delete "todo.db3"
+        File.WriteAllText( ( ✓ "%s\\..\\..\\..\\todo.cmd" start ), "@echo off \n \"tools/ctodo/tools/cctodo_100.exe\" %*")
+    ( ✓ "%s\\..\\..\\..\\todo.db3" start ) |> fun ftd ->
+        if File.Exists ftd then File.Delete ftd
         
-    ✞ "todo.cmd" |> fun ☠ ->
+    ✞ ( ✓ "%s\\..\\..\\ctodo\\tools\\cctodo_100.exe" start ) |> fun ☠ ->
         ☠ "initdb"
         ☠ "set git 0"
         ☠ "set syncfile TODO"
         ☠ "sync"
         ☠ ""
+        
+    ✓ "%s\\..\\..\\..\\tools\\emo\\tools\\todo.db3" start |> fun tdb ->
+        if File.Exists tdb then
+            ✓ "%s\\..\\..\\..\\todo.db3" start |> fun ntdb ->
+                if File.Exists ntdb then File.Delete ntdb
+                File.Move(tdb, ntdb)
 
 ❂ "-* press any key to close"
 Console.ReadKey() |> ignore
