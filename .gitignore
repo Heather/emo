@@ -1,3 +1,4 @@
+/tools/emo
 /tools/ctodo
 /tools/Heather
 /tools/shelly
@@ -6,5 +7,3 @@
 /*.db3
 /*.exe
 /*.cmd
-
-!emo.exe
