@@ -13,12 +13,12 @@ let ❂ ssargs = printfn ssargs
 let mutable debug = true
 
 ❂ "+---------------------------+"
-❂ "+     emo. version 0.0.8    +"
+❂ "+     emo. version 0.0.9    +"
 ❂ "+---------------------------+"
 
 let start = AppDomain.CurrentDomain.BaseDirectory
 
-let mutable ☃ = @"C:\Program Files\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0"
+let mutable ☃ = ✓ @"%s\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0" <| Environment.GetEnvironmentVariable("ProgramFiles(x86)")
 let mscorlib    = ✓ "\"%s\\mscorlib.dll\""    ☃
 let system      = ✓ "\"%s\\System.dll\""      ☃
 let system_core = ✓ "\"%s\\System.Core.dll\"" ☃
@@ -50,7 +50,7 @@ if File.Exists "..\\..\\nuget\\nuget.exe" || File.Exists "tools\\nuget\\nuget.ex
             yield "ctodo", "tools\\cctodo_100.exe", "Getting light todo list management util" ]
 else ❂ "No NuGet found on %s" §
 let fs31 = 
-    Environment.GetEnvironmentVariable("ProgramFiles") |> fun programFiles -> (* Moving from F# 3.0 to F# 3.1 is hard... *)
+    Environment.GetEnvironmentVariable("ProgramFiles(x86)") |> fun programFiles -> (* Moving from F# 3.0 to F# 3.1 is hard... *)
         ✓ @"%s\Reference Assemblies\Microsoft\FSharp\.NETFramework\v4.0\4.3.0.0\FSharp.Core.dll" programFiles
         |> fun newCore -> if File.Exists newCore then 
                             ❂ "-* Replacing 3.0 FSharp.Core.dll with 3.1 one\n"
@@ -168,7 +168,7 @@ if Seq.length fakeFiles > 0 then
     fakeFiles |> Seq.iter /> fun fl ->
     let ☭ = ✓ "FSI=%s %s" ★★ fl.FullName
     if fs31 then
-        Environment.GetEnvironmentVariable("ProgramFiles") |> fun programFiles -> (* Moving from F# 3.0 to F# 3.1 is hard... *)
+        Environment.GetEnvironmentVariable("ProgramFiles(x86)") |> fun programFiles -> (* Moving from F# 3.0 to F# 3.1 is hard... *)
             ✓ @"%s\Reference Assemblies\Microsoft\FSharp\.NETFramework\v4.0\4.3.0.0\FSharp.Core.dll" programFiles
             |> fun newCore ->
                 ❂ "-* Replacing 3.0 FSharp.Core.dll with 3.1 one\n"
@@ -199,7 +199,7 @@ else if Seq.length exeFiles > 0 then
             ✞ ★ ☭
             
     if fs31 then
-        Environment.GetEnvironmentVariable("ProgramFiles") |> fun programFiles -> (* Moving from F# 3.0 to F# 3.1 is hard... *)
+        Environment.GetEnvironmentVariable("ProgramFiles(x86)") |> fun programFiles -> (* Moving from F# 3.0 to F# 3.1 is hard... *)
             ✓ @"%s\Reference Assemblies\Microsoft\FSharp\.NETFramework\v4.0\4.3.0.0\FSharp.Core.dll" programFiles
             |> fun newCore -> File.Copy(newCore, ( ✓ "%s\\..\\..\\..\\bin\\FSharp.Core.dll" start), true)
                 
