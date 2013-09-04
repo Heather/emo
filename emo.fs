@@ -13,7 +13,7 @@ let ❂ ssargs = printfn ssargs
 let mutable debug = true
 
 ❂ "+---------------------------+"
-❂ "+     emo. version 0.0.9    +"
+❂ "+     emo. version 0.1.0    +"
 ❂ "+---------------------------+"
 
 let start = AppDomain.CurrentDomain.BaseDirectory
@@ -47,7 +47,7 @@ let ☂ pkgs =
 if File.Exists "..\\..\\nuget\\nuget.exe" || File.Exists "tools\\nuget\\nuget.exe" then
     ☂ [ yield "Heather", "tools\\net40\\fsc.exe", "Getting Custom F# Compiler with Unicode Support"
         if File.Exists "TODO" then
-            yield "ctodo", "tools\\cctodo_100.exe", "Getting light todo list management util" ]
+            yield "ctodo", "tools\\cctodo.exe", "Getting light todo list management util" ]
 else ❂ "No NuGet found on %s" §
 let fs31 = 
     Environment.GetEnvironmentVariable("ProgramFiles(x86)") |> fun programFiles -> (* Moving from F# 3.0 to F# 3.1 is hard... *)
@@ -211,11 +211,11 @@ if File.Exists "TODO" then
     ❂ "-* Processing todo"
     if not <| File.Exists ( ✓ "%s\\..\\..\\..\\todo.cmd" start ) then
         ❂ "! Creating todo.cmd"
-        File.WriteAllText( ( ✓ "%s\\..\\..\\..\\todo.cmd" start ), "@echo off \n \"tools/ctodo/tools/cctodo_100.exe\" %*")
+        File.WriteAllText( ( ✓ "%s\\..\\..\\..\\todo.cmd" start ), "@echo off \n \"tools/ctodo/tools/cctodo.exe\" %*")
     ( ✓ "%s\\..\\..\\..\\todo.db3" start ) |> fun ftd ->
         if File.Exists ftd then File.Delete ftd
         
-    ✞ ( ✓ "%s\\..\\..\\ctodo\\tools\\cctodo_100.exe" start ) |> fun ☠ ->
+    ✞ ( ✓ "%s\\..\\..\\ctodo\\tools\\cctodo.exe" start ) |> fun ☠ ->
         ☠ "initdb"
         ☠ "set git 0"
         ☠ "set syncfile TODO"
