@@ -13,17 +13,21 @@ let ❂ ssargs = printfn ssargs
 let mutable debug = true
 
 ❂ "+---------------------------+"
-❂ "+     emo. version 0.1.0    +"
+❂ "+     emo. version 0.1.2    +"
 ❂ "+---------------------------+"
 
 let start = AppDomain.CurrentDomain.BaseDirectory
 
-let mutable ☃ = ✓ @"%s\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0" <| Environment.GetEnvironmentVariable("ProgramFiles(x86)")
+let mutable ☃ = 
+    ✓ @"%s\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0" 
+    <|  if (IntPtr.Size = 4)
+            then Environment.GetEnvironmentVariable("ProgramFiles")
+            else Environment.GetEnvironmentVariable("ProgramFiles(x86)")
 let mscorlib    = ✓ "\"%s\\mscorlib.dll\""    ☃
 let system      = ✓ "\"%s\\System.dll\""      ☃
 let system_core = ✓ "\"%s\\System.Core.dll\"" ☃
 
-let mutable ☀ = ✓ "%s\\..\\..\\Heather\\tools\\net40" start
+let mutable ☀ = ✓ "%s\\..\\..\\Heather\\tools" start
 let ★   = ✓ "\"%s\\fsc.exe\""           ☀
 let ☆   = ✓ "\"%s\\FSharp.Core.dll\""   ☀
 let ★★  = ✓ "\"%s\\fsi.exe\""           ☀
@@ -45,18 +49,10 @@ let ☂ pkgs =
                 if debug then ❂ "> %s" ☄
                 ✞ § ☄
 if File.Exists "..\\..\\nuget\\nuget.exe" || File.Exists "tools\\nuget\\nuget.exe" then
-    ☂ [ yield "Heather", "tools\\net40\\fsc.exe", "Getting Custom F# Compiler with Unicode Support"
+    ☂ [ yield "Heather", "tools\\fsc.exe", "Getting Custom F# Compiler with Unicode Support"
         if File.Exists "TODO" then
             yield "ctodo", "tools\\cctodo.exe", "Getting light todo list management util" ]
 else ❂ "No NuGet found on %s" §
-let fs31 = 
-    Environment.GetEnvironmentVariable("ProgramFiles(x86)") |> fun programFiles -> (* Moving from F# 3.0 to F# 3.1 is hard... *)
-        ✓ @"%s\Reference Assemblies\Microsoft\FSharp\.NETFramework\v4.0\4.3.0.0\FSharp.Core.dll" programFiles
-        |> fun newCore -> if File.Exists newCore then 
-                            ❂ "-* Replacing 3.0 FSharp.Core.dll with 3.1 one\n"
-                            File.Copy(newCore, (✓ "%s\\..\\..\\Heather\\tools\\net40\\FSharp.Core.dll" start), true)
-                            true
-                          else false
 
 type Relations =
     | opens = 0
@@ -167,12 +163,6 @@ if Seq.length ➷ > 0 then ❂ "-* building modules:\n"; ♥ ➷ ; ❂ ""
 if Seq.length fakeFiles > 0 then
     fakeFiles |> Seq.iter /> fun fl ->
     let ☭ = ✓ "FSI=%s %s" ★★ fl.FullName
-    if fs31 then
-        Environment.GetEnvironmentVariable("ProgramFiles(x86)") |> fun programFiles -> (* Moving from F# 3.0 to F# 3.1 is hard... *)
-            ✓ @"%s\Reference Assemblies\Microsoft\FSharp\.NETFramework\v4.0\4.3.0.0\FSharp.Core.dll" programFiles
-            |> fun newCore ->
-                ❂ "-* Replacing 3.0 FSharp.Core.dll with 3.1 one\n"
-                File.Copy(newCore, ( ✓ "%s\\..\\..\\Failess\\tools\\FSharp.Core.dll" start), true)
     ✞ ( ✓ "%s\\..\\..\\Failess\\tools\\Failess.exe" start ) ☭
 else if Seq.length exeFiles > 0 then
     ❂ "-* building executables:\n"
@@ -197,12 +187,6 @@ else if Seq.length exeFiles > 0 then
                 <| fl.FullName
             if debug then ❂ "> %s" ☭
             ✞ ★ ☭
-            
-    if fs31 then
-        Environment.GetEnvironmentVariable("ProgramFiles(x86)") |> fun programFiles -> (* Moving from F# 3.0 to F# 3.1 is hard... *)
-            ✓ @"%s\Reference Assemblies\Microsoft\FSharp\.NETFramework\v4.0\4.3.0.0\FSharp.Core.dll" programFiles
-            |> fun newCore -> File.Copy(newCore, ( ✓ "%s\\..\\..\\..\\bin\\FSharp.Core.dll" start), true)
-                
     ❂ ""
     ❂ "! all the executables compiled"
     ❂ ""
