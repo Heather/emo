@@ -13,7 +13,7 @@ let ❂ ssargs = printfn ssargs
 let mutable debug = true
 
 ❂ "+---------------------------+"
-❂ "+     emo. version 0.1.2    +"
+❂ "+     emo. version 0.1.4    +"
 ❂ "+---------------------------+"
 
 let start = AppDomain.CurrentDomain.BaseDirectory
@@ -89,9 +89,12 @@ let opens, ➷ =
 
 let buildTasks = ref (  ➷  |> List.filter /> fun (_, _, _, ✿) -> not ✿
                             |> List.length  )
-let weirdCounter = ref 0
+
+let Failess = ref false;
+let cycleCounter = ref 0
+let libCounter = ref 0
 let rec ♥ modules_to_compile =
-    ❂ "! cycle %d ->\n" !weirdCounter
+    ❂ "! cycle %d ->\n" !cycleCounter
     let 悪魔 = 
         modules_to_compile
         |> List.filter /> fun (_, _, _, ✿) -> not ✿
@@ -102,8 +105,10 @@ let rec ♥ modules_to_compile =
                     match v_o with
                     | ✈ when v_o.StartsWith "System" ->  (v_o, "System", "System", true)
                     | ✈ when v_o.StartsWith "FSharp" ->  (v_o, "FSharp", "FSharp", true)
-                    | ✈ when v_o.StartsWith "Failess" -> 
-                        ☂ [ ("Failess", (✓ "%s\\..\\..\\Failess.exe" start), "Failess build tool with CSS EDSL library") ]
+                    | ✈ when v_o.StartsWith "Failess" ->
+                        if not !Failess then
+                            Failess := true
+                            ☂ [ ("Failess", "tools\\Failess.exe", "Failess build tool with CSS EDSL library") ]
                         (v_o, "Failess", (✓ "%s\\..\\..\\Failess\\tools\\FailessLib.dll" start), true)
                     | _ ->  modules_to_compile |> Seq.filter /> fun (_, _, v_m, _) -> (v_m = v_o)
                                                |> Seq.map    /> fun (f_m, f_n, _, ✿) -> (v_o, f_m, f_n, ✿)
@@ -120,7 +125,12 @@ let rec ♥ modules_to_compile =
                     let ☭ =
                         ✓ "-o:%s\\..\\..\\..\\bin\\%s.dll --noframework --optimize+ -r:%s %s --target:library --warn:4 --utf8output --fullpaths %s"
                         <| start
-                        <| ☢ <| ☆ 
+                        <| if ☢ = ""
+                                then
+                                    libCounter:= !libCounter + 1
+                                    ✓ "Lib%d" !libCounter
+                                else ☢
+                        <| ☆
                         <| String.Join(" ",
                             [for (_, _, f_n, _) in ✤ ->
                                 ✓ "-r:%s.dll" <| f_n.Split('.').[0]
@@ -134,7 +144,7 @@ let rec ♥ modules_to_compile =
                 |> List.length ) with
     | 0 -> ❂ "\n! all the modules compiled"
     | mx when mx = !buildTasks -> ❂ "\n! can't compile modules"
-    | mx -> weirdCounter := !weirdCounter + 1
+    | mx -> cycleCounter := !cycleCounter + 1
             ❂ "\n! compiled %d modules" (!buildTasks - mx)
             buildTasks := mx ; ♥ 悪魔
 
