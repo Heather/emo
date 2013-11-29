@@ -132,8 +132,12 @@ let rec ♥ modules_to_compile =
                                 else ☢
                         <| ☆
                         <| String.Join(" ",
-                            [for (_, _, f_n, _) in ✤ ->
-                                ✓ "-r:%s.dll" <| f_n.Split('.').[0]
+                            [for (_, _, f_n, _) in ✤ do
+                                let dll = f_n.Split('.')
+                                if dll.Length > 1 then
+                                    if dll.[dll.Length - 1] = "dll"
+                                        then yield ✓ "-r:%s" f_n
+                                        else yield ✓ "-r:%s.dll" dll.[0]
                                 ])
                         <| f
                     if debug then ❂ "> %s" ☭
@@ -191,8 +195,12 @@ else if Seq.length exeFiles > 0 then
                             yield ✓ "-r:%s" <| file
                         ])
                 <| String.Join(" ",
-                    [for (_, f_n, _, _) in ➷ ->
-                        ✓ "-r:%s.dll" <| f_n.Split('.').[0]
+                    [for (_, f_n, _, _) in ➷ do
+                        let dll = f_n.Split('.')
+                        if dll.Length > 1 then
+                            if dll.[dll.Length - 1] = "dll"
+                                then yield ✓ "-r:%s" f_n
+                                else yield ✓ "-r:%s.dll" dll.[0]
                         ])
                 <| fl.FullName
             if debug then ❂ "> %s" ☭
