@@ -5,7 +5,7 @@ if not exist "tools\emo\tools\emo.exe" (
 	"tools\nuget\nuget.exe" "install" "emo" "-OutputDirectory" "tools" "-ExcludeVersion"
 )
 
-"tools\emo\tools\emo.exe"
+"tools\emo\tools\emo.exe" --debug
 
 ::If emo will fail there is hack:
 ::set c=tools\Heather\tools\
