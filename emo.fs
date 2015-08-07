@@ -1,4 +1,5 @@
 ﻿open shelly
+open Forelock
 
 open System
 open System.IO
@@ -8,26 +9,32 @@ let ✓ s args = sprintf s args
 let ✞ s args = shellxn s args
 let ❂ ssargs = printfn ssargs
 
-let mutable debug = false
-let mutable start = AppDomain.CurrentDomain.BaseDirectory
+let mutable debug  = false
+let mutable dotodo = true
+let mutable start  = AppDomain.CurrentDomain.BaseDirectory
 
-let mutable ☃ = 
-    ✓ @"%s\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0" 
-    <|  if (IntPtr.Size = 4)
-            then Environment.GetEnvironmentVariable("ProgramFiles")
-            else Environment.GetEnvironmentVariable("ProgramFiles(x86)")
+let ☃ = let b = ✓ @"%s\Reference Assemblies\Microsoft\Framework\.NETFramework\"
+                <|if (IntPtr.Size = 4)
+                      then Environment.GetEnvironmentVariable("ProgramFiles")
+                      else Environment.GetEnvironmentVariable("ProgramFiles(x86)")
+        if    File.Exists (✓ "%sv4.5.2\\mscorlib.dll" b) then (✓ "%sv4.5.2" b)
+        elif  File.Exists (✓ "%sv4.5.1\\mscorlib.dll" b) then (✓ "%sv4.5.1" b)
+        elif  File.Exists (✓ "%sv4.5\\mscorlib.dll" b)   then (✓ "%sv4.5" b)
+        elif  File.Exists (✓ "%sv4.0\\mscorlib.dll" b)   then (✓ "%sv4.0" b)
+        else  null
+
 let mscorlib    = ✓ "\"%s\\mscorlib.dll\""    ☃
 let system      = ✓ "\"%s\\System.dll\""      ☃
 let system_core = ✓ "\"%s\\System.Core.dll\"" ☃
 
-let mutable ☀ = ✓ "%s\\..\\..\\Heather\\tools" start
+let ☀   = ✓ "%s\\..\\..\\Heather\\tools" start
 let ★   = ✓ "\"%s\\fsc.exe\""           ☀
 let ☆   = ✓ "\"%s\\FSharp.Core.dll\""   ☀
 let ★★  = ✓ "\"%s\\fsi.exe\""           ☀
 
 let version() =
     ❂ "+---------------------------+"
-    ❂ "+     emo. version 0.1.5    +"
+    ❂ "+     emo. version 0.1.6    +"
     ❂ "+---------------------------+"
 let help() =
     version()
@@ -40,7 +47,8 @@ let help() =
                     | _ -> ()
                 else
                     match arg with
-                    | "--debug"             -> debug <- true
+                    | "--debug"             -> debug  <- true
+                    | "--notodo"            -> dotodo <- false
                     | "--version" | "-v"    -> version();   rtn := true
                     | "--help" | "-h"       -> help();      rtn := true
                     | _ -> ())
@@ -51,12 +59,14 @@ type Relations =
     | modules = 1
 
 let mutable packages =
-    [|  "shelly", "tools\\net40\shelly.dll", "Getting shelly", "shellxn", false
-    |]    
+    [|  "shelly", "tools\\net40\\shelly.dll", "Getting shelly", "shellxn", false
+    |]
 
 [<EntryPoint>]
 let Main(args) =
-    Console.Clear()
+  if String.IsNullOrEmpty ☃ then
+    version(); printfn "Failed to find .NET install"; -1
+  else
     let rtn =  ref false
     if  args.Length > 0 then
         args |> Seq.iter(fun (arg:string) ->
@@ -67,13 +77,14 @@ let Main(args) =
                         | _ -> ()
                     else
                         match arg with
-                        | "--debug"             -> debug <- true
+                        | "--debug"             -> debug  <- true
+                        | "--notodo"            -> dotodo <- false
                         | "--version" | "-v"    -> version();   rtn := true
                         | "--help" | "-h"       -> help();      rtn := true
                         | _ -> ())
-
+    if debug then version()
     if not !rtn then
-        let source = 
+        let source =
             (new DirectoryInfo( ✓ "%s\\..\\..\\.." start )).GetFiles()
             |> Array.filter /> fun f -> (  f.Extension = ".fs"
                                         || f.Extension = ".fsx")
@@ -94,7 +105,7 @@ let Main(args) =
                 if File.Exists "TODO" then
                     yield "ctodo", "tools\\cctodo.exe", "Getting light todo list management util" ]
         else ❂ "No NuGet found on %s" §
-            
+
         let opens, ➷ =
             ❂ "-* code analyse\n"
             let ☎ =
@@ -111,7 +122,7 @@ let Main(args) =
                             if split.Length > 1 then
                                 yield (Relations.modules, f.FullName, f.Name, split.[1])
                         | line -> (* Additional analyse *)
-                            packages 
+                            packages
                             |> Array.filter /> fun (_,_,_,_,✲) -> not ✲
                             |> Array.iteri /> fun i (pn,pf,pm,pc,_) ->
                                 if line.Contains(pc) then
@@ -128,12 +139,12 @@ let Main(args) =
         let libCounter = ref 0
         let rec ♥ modules_to_compile =
             ❂ "! cycle %d ->\n" !cycleCounter
-            let 悪魔 = 
+            let 悪魔 =
                 modules_to_compile
                 |> List.filter /> fun (_, _, _, ✿) -> not ✿
-                |> List.map /> fun (f, n, v, _) -> 
+                |> List.map /> fun (f, n, v, _) ->
                     let ☯ = opens |> List.filter /> fun (f_o, _, _) -> (f_o = f)
-                    let ✤ = 
+                    let ✤ =
                         ☯ |> Seq.map /> fun (_, _, v_o) ->
                             match v_o with
                             | ✈ when v_o.StartsWith "System" ->  (v_o, "System", "System", true)
@@ -152,11 +163,11 @@ let Main(args) =
                                        |> Seq.filter /> fun (_, _, _, ✿) -> not ✿
                                        |> Seq.length
                                        |> fun ✖ -> ✖ = 0
-                    if allComiled then 
+                    if allComiled then
                         ❂ " >>> compiling %A" n
                         n.Split('.').[0] |> fun ☢ ->
                             let ☭ =
-                                ✓ "-o:%s\\..\\..\\..\\bin\\%s.dll --noframework --optimize+ -r:%s %s --target:library --warn:4 --utf8output --fullpaths %s"
+                                ✓ "-o:%s\\..\\..\\..\\bin\\%s.dll --noframework --optimize+ -r:%s -r:%s -r:%s -r:%s %s --target:library --warn:4 --utf8output --fullpaths %s"
                                 <| start
                                 <| if ☢ = ""
                                         then
@@ -164,6 +175,7 @@ let Main(args) =
                                             ✓ "Lib%d" !libCounter
                                         else ☢
                                 <| ☆
+                                <| mscorlib <| system <| system_core
                                 <| String.Join(" ",
                                     [for (_, _, f_n, _) in ✤ do
                                         let dll = f_n.Split('.')
@@ -186,11 +198,11 @@ let Main(args) =
                     buildTasks := mx ; ♥ 悪魔
 
         let exeFiles =
-            source  |> Seq.filter /> fun f -> 
+            source  |> Seq.filter /> fun f ->
                 ➷  |> Seq.filter /> fun (f_m, n_m, _, _) -> f.FullName = f_m
                     |> Seq.length
                     |> fun ✦ -> ✦ = 0
-                    
+
         let fakeFiles =
             exeFiles |> Seq.filter /> fun f -> f.Extension = ".fsx"
                      |> Seq.filter /> fun f ->
@@ -198,7 +210,7 @@ let Main(args) =
                         [while not tx.EndOfStream do
                             match ( tx.ReadLine() ).TrimStart() with
                             | line when line.StartsWith("Target ") -> yield true
-                            | _ -> yield false] 
+                            | _ -> yield false]
                         |> Seq.length
                         |> fun ✦ -> ✦ > 0
 
@@ -223,7 +235,7 @@ let Main(args) =
                         <| mscorlib <| system <| system_core
                         <| String.Join(" ",
                             [for (pn, pf, _, _, need) in packages do
-                                if need then 
+                                if need then
                                     let file = ✓ "%s\\..\\..\\%s\\%s" start pn pf
                                     yield ✓ "-r:%s" <| file
                                 ])
@@ -241,27 +253,29 @@ let Main(args) =
             ❂ ""
             ❂ "! all the executables compiled"
             ❂ ""
-            
-        if File.Exists "TODO" then
+
+        if dotodo && File.Exists "TODO" then
             ❂ "-* Processing todo"
             if not <| File.Exists ( ✓ "%s\\..\\..\\..\\todo.cmd" start ) then
                 ❂ "! Creating todo.cmd"
                 File.WriteAllText( ( ✓ "%s\\..\\..\\..\\todo.cmd" start ), "@echo off \n \"tools/ctodo/tools/cctodo.exe\" %*")
             ( ✓ "%s\\..\\..\\..\\todo.db3" start ) |> fun ftd ->
                 if File.Exists ftd then File.Delete ftd
-                
+
             ✞ ( ✓ "%s\\..\\..\\ctodo\\tools\\cctodo.exe" start ) |> fun ☠ ->
                 ☠ "initdb"
                 ☠ "set git 0"
                 ☠ "set syncfile TODO"
                 ☠ "sync"
                 ☠ ""
-                
+
             ✓ "%s\\..\\..\\..\\tools\\emo\\tools\\todo.db3" start |> fun tdb ->
                 if File.Exists tdb then
                     ✓ "%s\\..\\..\\..\\todo.db3" start |> fun ntdb ->
                         if File.Exists ntdb then File.Delete ntdb
                         File.Move(tdb, ntdb)
 
-    ❂ "-* press any key to close"
-    Console.ReadKey() |> ignore; 0 (* Success *)
+        ❂ "-* press any key to close"
+        Console.ReadKey() |> ignore
+
+    0 (* Success *)
