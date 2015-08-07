@@ -1,5 +1,4 @@
 install:
 - cmd: 'git submodule update --init'
 build_script:
-- ps: |
-    emo.bat
+- cmd: 'emo.bat'
