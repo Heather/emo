@@ -6,5 +6,6 @@
 
 /*.dll
 /*.db3
-/*.exe
 /*.cmd
+
+*.exe

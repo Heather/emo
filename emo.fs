@@ -4,37 +4,11 @@ open Forelock
 open System
 open System.IO
 
-    (* Some dictionary *)
-let ✓ s args = sprintf s args
-let ✞ s args = shellxn s args
-let ❂ ssargs = printfn ssargs
-
 let mutable debug  = false
 let mutable dotodo = true
-let mutable start  = AppDomain.CurrentDomain.BaseDirectory
-
-(* Base .NET Framework Path, currently support v. 4.0 -> 4.5.2 *)
-let ☃ = let b = ✓ @"%s\Reference Assemblies\Microsoft\Framework\.NETFramework\"
-                <|if (IntPtr.Size = 4)
-                      then Environment.GetEnvironmentVariable("ProgramFiles")
-                      else Environment.GetEnvironmentVariable("ProgramFiles(x86)")
-        if    File.Exists (✓ "%sv4.5.2\\mscorlib.dll" b) then (✓ "%sv4.5.2" b)
-        elif  File.Exists (✓ "%sv4.5.1\\mscorlib.dll" b) then (✓ "%sv4.5.1" b)
-        elif  File.Exists (✓ "%sv4.5\\mscorlib.dll" b)   then (✓ "%sv4.5" b)
-        elif  File.Exists (✓ "%sv4.0\\mscorlib.dll" b)   then (✓ "%sv4.0" b)
-        else  null
-
-let mscorlib    = ✓ "\"%s\\mscorlib.dll\""    ☃
-let system      = ✓ "\"%s\\System.dll\""      ☃
-let system_core = ✓ "\"%s\\System.Core.dll\"" ☃
-
-let ☀   = ✓ "%s\\..\\..\\Heather\\tools" start
-let ★   = ✓ "\"%s\\fsc.exe\""           ☀
-let ☆   = ✓ "\"%s\\FSharp.Core.dll\""   ☀
-let ★★  = ✓ "\"%s\\fsi.exe\""           ☀
 
 let version() = ❂ "+---------------------------+"
-                ❂ "+     emo. version 0.1.6    +"
+                ❂ "+     emo. version 0.1.7    +"
                 ❂ "+---------------------------+"
 let help() =
     version()
@@ -53,15 +27,6 @@ let help() =
                     | "--help" | "-h"       -> help();      rtn := true
                     | _ -> ())
     """
-
-type Relations =
-    | opens = 0
-    | modules = 1
-
-(* List of Packages automatically detected and downloaded from Nuget *)
-let mutable packages =
-    [|  "shelly", "tools\\net40\\shelly.dll", "Getting shelly", "shellxn", false
-    |]
 
 [<EntryPoint>]
 let Main(args) =
@@ -90,7 +55,7 @@ let Main(args) =
             |> Array.filter /> fun f -> (  f.Extension = ".fs"
                                         || f.Extension = ".fsx")
 
-        let § = ✓ "\"%s..\\..\\nuget\\nuget.exe\"" start
+        let § = ✓ "\"%s..\\..\\nuget\\NuGet.exe\"" start
         let ☂ pkgs =
             for (pn, pf, pd) in pkgs do
                 if debug then printfn "check if %s exists" pf
@@ -99,7 +64,7 @@ let Main(args) =
                     ❂ "%s" pd (*Nuget install package by pn pf and pd ^__^*)
                     (✓ "\"install\" \"%s\" \"-OutputDirectory\" \"%s\\..\\..\" \"-ExcludeVersion\"" pn start)
                     |> fun ☄ -> if debug then ❂ "> %s" ☄; ✞ § ☄
-        if File.Exists "..\\..\\nuget\\nuget.exe" || File.Exists "tools\\nuget\\nuget.exe" then
+        if File.Exists "..\\..\\nuget\\NuGet.exe" || File.Exists "tools\\nuget\\NuGet.exe" then
             ☂ [ yield "Heather", "tools\\fsc.exe", "Getting Custom F# Compiler with Unicode Support"
                 if File.Exists "TODO" then
                     yield "ctodo", "tools\\cctodo.exe", "Getting light todo list management util" ]
@@ -155,24 +120,32 @@ let Main(args) =
                                 (v_o, "Failess", (✓ "%s\\..\\..\\Failess\\tools\\FailessLib.dll" start), true)
                             | _ ->  modules_to_compile |> Seq.filter /> fun (_, _, v_m, _) -> (v_m = v_o)
                                                        |> Seq.map    /> fun (f_m, f_n, _, ✿) -> (v_o, f_m, f_n, ✿)
-                                    |> fun foundModule -> if (Seq.length foundModule > 0) then
-                                                            Seq.head foundModule
+                                    |> fun foundModule -> if Seq.length foundModule > 0 then
+                                                             Seq.head foundModule
+                                                          elif packages
+                                                               |> Array.filter /> fun (pn,_,_,_,_) -> v_o = pn
+                                                               |> Array.length |> fun ✖ -> ✖ > 0
+                                                               then (v_o, "", "", true)
                                                           else (v_o, "", "", false)
-                    let allComiled =   ✤
-                                       |> Seq.filter /> fun (_, _, _, ✿) -> not ✿
-                                       |> Seq.length
-                                       |> fun ✖ -> ✖ = 0
+                    let allComiled = ✤ |> Seq.filter /> fun (_, _, _, ✿) -> not ✿
+                                       |> Seq.length |> fun ✖ -> ✖ = 0
                     if allComiled then
                         ❂ " >>> compiling %A" n
                         n.Split('.').[0] |> fun ☢ ->
                             let ☭ = (* Library compilation *)
-                                ✓ "-o:%s\\..\\..\\..\\bin\\%s.dll --noframework --optimize+ -r:%s -r:%s -r:%s -r:%s %s %s %s"
+                                ✓ "-o:%s\\..\\..\\..\\bin\\%s.dll --noframework --optimize+ -r:%s -r:%s -r:%s -r:%s %s %s %s %s"
                                 <| start <| if ☢ = "" (* Library name *)
                                               then libCounter:= !libCounter + 1
                                                    ✓ "Lib%d" !libCounter
                                               else ☢
                                 <| ☆ <| mscorlib <| system <| system_core
-                                <| String.Join(" ",
+                                <| String.Join(" ", (* Dependending packages *)
+                                    [for (pn, pf, _, _, need) in packages do
+                                        if need then
+                                            let file = ✓ "%s\\..\\..\\%s\\%s" start pn pf
+                                            yield ✓ "-r:%s" <| file
+                                        ])
+                                <| String.Join(" ", (* Dependending modules *)
                                     [for (_, _, f_n, _) in ✤ do
                                         let dll = f_n.Split('.')
                                         if dll.Length > 1 then
