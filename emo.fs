@@ -13,6 +13,7 @@ let mutable debug  = false
 let mutable dotodo = true
 let mutable start  = AppDomain.CurrentDomain.BaseDirectory
 
+(* Base .NET Framework Path, currently support v. 4.0 -> 4.5.2 *)
 let ☃ = let b = ✓ @"%s\Reference Assemblies\Microsoft\Framework\.NETFramework\"
                 <|if (IntPtr.Size = 4)
                       then Environment.GetEnvironmentVariable("ProgramFiles")
@@ -32,10 +33,9 @@ let ★   = ✓ "\"%s\\fsc.exe\""           ☀
 let ☆   = ✓ "\"%s\\FSharp.Core.dll\""   ☀
 let ★★  = ✓ "\"%s\\fsi.exe\""           ☀
 
-let version() =
-    ❂ "+---------------------------+"
-    ❂ "+     emo. version 0.1.6    +"
-    ❂ "+---------------------------+"
+let version() = ❂ "+---------------------------+"
+                ❂ "+     emo. version 0.1.6    +"
+                ❂ "+---------------------------+"
 let help() =
     version()
     ❂ """
@@ -58,6 +58,7 @@ type Relations =
     | opens = 0
     | modules = 1
 
+(* List of Packages automatically detected and downloaded from Nuget *)
 let mutable packages =
     [|  "shelly", "tools\\net40\\shelly.dll", "Getting shelly", "shellxn", false
     |]
@@ -95,11 +96,9 @@ let Main(args) =
                 if debug then printfn "check if %s exists" pf
                 if ((not <| File.Exists ( ✓ "..\\..\\%s\\%s" pn pf )) &&
                     (not <| File.Exists ( ✓ "tools\\%s\\%s" pn pf ) ) ) then
-                    ❂ "%s" pd
+                    ❂ "%s" pd (*Nuget install package by pn pf and pd ^__^*)
                     (✓ "\"install\" \"%s\" \"-OutputDirectory\" \"%s\\..\\..\" \"-ExcludeVersion\"" pn start)
-                    |> fun ☄ ->
-                        if debug then ❂ "> %s" ☄
-                        ✞ § ☄
+                    |> fun ☄ -> if debug then ❂ "> %s" ☄; ✞ § ☄
         if File.Exists "..\\..\\nuget\\nuget.exe" || File.Exists "tools\\nuget\\nuget.exe" then
             ☂ [ yield "Heather", "tools\\fsc.exe", "Getting Custom F# Compiler with Unicode Support"
                 if File.Exists "TODO" then
@@ -131,8 +130,8 @@ let Main(args) =
             ☎ |> Seq.filter(fun (☤,_,_,_) -> ☤ = Relations.opens)   |> Seq.map (fun (_,f,n,v) -> (f, n, v))        |> Seq.toList ,
             ☎ |> Seq.filter(fun (☤,_,_,_) -> ☤ = Relations.modules) |> Seq.map (fun (_,f,n,v) -> (f, n, v, false)) |> Seq.toList
 
-        let buildTasks = ref (  ➷  |> List.filter /> fun (_, _, _, ✿) -> not ✿
-                                    |> List.length  )
+        let buildTasks = ref ( ➷  |> List.filter /> fun (_, _, _, ✿) -> not ✿
+                                  |> List.length  )
 
         let Failess = ref false;
         let cycleCounter = ref 0
@@ -166,16 +165,13 @@ let Main(args) =
                     if allComiled then
                         ❂ " >>> compiling %A" n
                         n.Split('.').[0] |> fun ☢ ->
-                            let ☭ =
-                                ✓ "-o:%s\\..\\..\\..\\bin\\%s.dll --noframework --optimize+ -r:%s -r:%s -r:%s -r:%s %s --target:library --warn:4 --utf8output --fullpaths %s"
-                                <| start
-                                <| if ☢ = ""
-                                        then
-                                            libCounter:= !libCounter + 1
-                                            ✓ "Lib%d" !libCounter
-                                        else ☢
-                                <| ☆
-                                <| mscorlib <| system <| system_core
+                            let ☭ = (* Library compilation *)
+                                ✓ "-o:%s\\..\\..\\..\\bin\\%s.dll --noframework --optimize+ -r:%s -r:%s -r:%s -r:%s %s %s %s"
+                                <| start <| if ☢ = "" (* Library name *)
+                                              then libCounter:= !libCounter + 1
+                                                   ✓ "Lib%d" !libCounter
+                                              else ☢
+                                <| ☆ <| mscorlib <| system <| system_core
                                 <| String.Join(" ",
                                     [for (_, _, f_n, _) in ✤ do
                                         let dll = f_n.Split('.')
@@ -184,12 +180,12 @@ let Main(args) =
                                                 then yield ✓ "-r:%s" f_n
                                                 else yield ✓ "-r:%s.dll" dll.[0]
                                         ])
-                                <| f
+                                <| "--target:library --warn:4 --utf8output --fullpaths" <| f
                             if debug then ❂ "> %s" ☭
                             ✞ ★ ☭; (f, n, v, true)
                     else ❂ " >>> can't compile %A" f; (f, n, v, false)
                 |> Seq.toList
-            match ( 悪魔|> List.filter /> fun (_, _, _, ✿) -> not ✿
+            match (悪魔 |> List.filter /> fun (_, _, _, ✿) -> not ✿
                         |> List.length ) with
             | 0 -> ❂ "\n! all the modules compiled"
             | mx when mx = !buildTasks -> ❂ "\n! can't compile modules"
@@ -214,7 +210,7 @@ let Main(args) =
                         |> Seq.length
                         |> fun ✦ -> ✦ > 0
 
-        ❂ ""
+        ❂ "" (* I forgot why this is there... *)
         if not <| Directory.Exists ( ✓ "%s\\..\\..\\..\\bin" start ) then
             Directory.CreateDirectory ( ✓ "%s\\..\\..\\..\\bin" start) |> ignore
         if Seq.length ➷ > 0 then ❂ "-* building modules:\n"; ♥ ➷ ; ❂ ""
@@ -229,17 +225,16 @@ let Main(args) =
                 ❂ " >>> compiling %A" fl
                 fl.Name.Split('.').[0] |> fun ☢ ->
                     let ☭ =
-                        ✓ "-o:%s\\..\\..\\..\\bin\\%s.exe --noframework --optimize+ -r:%s -r:%s -r:%s -r:%s %s %s --warn:4 --utf8output --fullpaths %s"
-                        <| start
-                        <| ☢ <| ☆
+                        ✓ "-o:%s\\..\\..\\..\\bin\\%s.exe --noframework --optimize+ -r:%s -r:%s -r:%s -r:%s %s %s %s %s"
+                        <| start <| ☢ <| ☆
                         <| mscorlib <| system <| system_core
-                        <| String.Join(" ",
+                        <| String.Join(" ", (* Dependending packages *)
                             [for (pn, pf, _, _, need) in packages do
                                 if need then
                                     let file = ✓ "%s\\..\\..\\%s\\%s" start pn pf
                                     yield ✓ "-r:%s" <| file
                                 ])
-                        <| String.Join(" ",
+                        <| String.Join(" ", (* Dependending modules *)
                             [for (_, f_n, _, _) in ➷ do
                                 let dll = f_n.Split('.')
                                 if dll.Length > 1 then
@@ -247,12 +242,10 @@ let Main(args) =
                                         then yield ✓ "-r:%s" f_n
                                         else yield ✓ "-r:%s.dll" dll.[0]
                                 ])
-                        <| fl.FullName
+                        <| "--warn:4 --utf8output --fullpaths" <| fl.FullName
                     if debug then ❂ "> %s" ☭
                     ✞ ★ ☭
-            ❂ ""
-            ❂ "! all the executables compiled"
-            ❂ ""
+            ❂ ""; ❂ "! all the executables compiled"; ❂ ""
 
         if dotodo && File.Exists "TODO" then
             ❂ "-* Processing todo"

@@ -1,9 +1,9 @@
 @echo off
 cls
 
+:: TODO: Remove NuGet.exe
+
 :: Clean up
-rm -rf *.exe
-rm -rf *.dll
 rm -rf bin
 
 :: Nuget
