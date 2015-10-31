@@ -8,7 +8,7 @@ let mutable debug  = false
 let mutable dotodo = true
 
 let version() = ❂ "+---------------------------+"
-                ❂ "+     emo. version 0.1.7    +"
+                ❂ "+     emo. version 0.1.8    +"
                 ❂ "+---------------------------+"
 let help() =
     version()
@@ -156,7 +156,11 @@ let Main(args) =
                                 <| "--target:library --warn:4 --utf8output --fullpaths" <| f
                             if debug then ❂ "> %s" ☭
                             ✞ ★ ☭; (f, n, v, true)
-                    else ❂ " >>> can't compile %A" f; (f, n, v, false)
+                    else ❂ " >>> can't compile %A" f
+                         ✤ |> Seq.filter /> fun (n, _, _, ✿) -> not ✿
+                           |> Seq.map /> fun (n, _, _, _) -> n
+                           |> ❂ " >>> missing: %A"
+                         (f, n, v, false)
                 |> Seq.toList
             match (悪魔 |> List.filter /> fun (_, _, _, ✿) -> not ✿
                         |> List.length ) with

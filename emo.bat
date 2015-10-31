@@ -7,9 +7,15 @@ if %PROCESSOR_ARCHITECTURE%==x86 (
 				 set sys="%ProgramFiles%\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.2\System.dll"
 				 set core="%ProgramFiles%\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.2\System.Core.dll"
 ) else ( set MSBUILD="%SystemRoot%\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe"
-				 set mscor="%ProgramFiles(x86)%\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.2\mscorlib.dll"
-				 set sys="%ProgramFiles(x86)%\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.2\System.dll"
-				 set core="%ProgramFiles(x86)%\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.2\System.Core.dll"
+    if not exist "%ProgramFiles(x86)%\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.2\" (
+        set mscor="%ProgramFiles(x86)%\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.1\mscorlib.dll"
+		set sys="%ProgramFiles(x86)%\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.1\System.dll"
+		set core="%ProgramFiles(x86)%\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.1\System.Core.dll"
+    ) else (
+        set mscor="%ProgramFiles(x86)%\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.2\mscorlib.dll"
+		set sys="%ProgramFiles(x86)%\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.2\System.dll"
+		set core="%ProgramFiles(x86)%\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.2\System.Core.dll"
+    )
 )
 if not exist tools\nuget\NuGet.exe %MSBUILD% tools\nuget\NuGet.targets /t:CheckPrerequisites
 

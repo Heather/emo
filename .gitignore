@@ -7,5 +7,6 @@
 /*.dll
 /*.db3
 /*.cmd
+/*.nupkg
 
 *.exe
