@@ -30,7 +30,7 @@ if not exist "tools\emo\tools\emo.exe" (
 
 if "%1"=="--rebuild" goto Rebuild
 
-"tools\emo\tools\emo.exe" --debug --notodo
+"tools\emo\tools\emo.exe" --debug --notodo --nokeypress
 goto End
 
 :Rebuild

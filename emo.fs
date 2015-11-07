@@ -4,11 +4,12 @@ open Forelock
 open System
 open System.IO
 
-let mutable debug  = false
-let mutable dotodo = true
+let mutable debug    = false
+let mutable dotodo   = true
+let mutable keypress = true
 
 let version() = ❂ "+---------------------------+"
-                ❂ "+     emo. version 0.1.8    +"
+                ❂ "+     emo. version 0.2.0    +"
                 ❂ "+---------------------------+"
 let help() =
     version()
@@ -21,8 +22,9 @@ let help() =
                     | _ -> ()
                 else
                     match arg with
-                    | "--debug"             -> debug  <- true
-                    | "--notodo"            -> dotodo <- false
+                    | "--debug"             -> debug    <- true
+                    | "--notodo"            -> dotodo   <- false
+                    | "--nokeypress"        -> keypress <- false
                     | "--version" | "-v"    -> version();   rtn := true
                     | "--help" | "-h"       -> help();      rtn := true
                     | _ -> ())
@@ -43,19 +45,21 @@ let Main(args) =
                         | _ -> ()
                     else
                         match arg with
-                        | "--debug"             -> debug  <- true
-                        | "--notodo"            -> dotodo <- false
+                        | "--debug"             -> debug    <- true
+                        | "--notodo"            -> dotodo   <- false
+                        | "--nokeypress"        -> keypress <- false
                         | "--version" | "-v"    -> version();   rtn := true
                         | "--help" | "-h"       -> help();      rtn := true
                         | _ -> ())
     if debug then version()
     if not !rtn then
+        let abpath = Path.GetFullPath( ✓ "%s\\..\\..\\.." start )
         let source =
             (new DirectoryInfo( ✓ "%s\\..\\..\\.." start )).GetFiles()
             |> Array.filter /> fun f -> (  f.Extension = ".fs"
                                         || f.Extension = ".fsx")
 
-        let § = ✓ "\"%s..\\..\\nuget\\NuGet.exe\"" start
+        let § = Path.GetFullPath( ✓ "%s\\..\\..\\NuGet\\NuGet.exe" start )
         let ☂ pkgs =
             for (pn, pf, pd) in pkgs do
                 if debug then printfn "check if %s exists" pf
@@ -63,8 +67,8 @@ let Main(args) =
                     (not <| File.Exists ( ✓ "tools\\%s\\%s" pn pf ) ) ) then
                     ❂ "%s" pd (*Nuget install package by pn pf and pd ^__^*)
                     (✓ "\"install\" \"%s\" \"-OutputDirectory\" \"%s\\..\\..\" \"-ExcludeVersion\"" pn start)
-                    |> fun ☄ -> if debug then ❂ "> %s" ☄; ✞ § ☄
-        if File.Exists "..\\..\\nuget\\NuGet.exe" || File.Exists "tools\\nuget\\NuGet.exe" then
+                    |> fun ☄ -> ❂ "> %s" ☄; ✞ § ☄
+        if File.Exists § then
             ☂ [ yield "Heather", "tools\\fsc.exe", "Getting Custom F# Compiler with Unicode Support"
                 if File.Exists "TODO" then
                     yield "ctodo", "tools\\cctodo.exe", "Getting light todo list management util" ]
@@ -157,9 +161,10 @@ let Main(args) =
                             if debug then ❂ "> %s" ☭
                             ✞ ★ ☭; (f, n, v, true)
                     else ❂ " >>> can't compile %A" f
-                         ✤ |> Seq.filter /> fun (n, _, _, ✿) -> not ✿
-                           |> Seq.map /> fun (n, _, _, _) -> n
-                           |> ❂ " >>> missing: %A"
+                         ❂ " >>> missing: %s" (
+                            ✤ |> Seq.filter /> fun (_, nm, _, ✿) -> not ✿
+                              |> Seq.map    /> fun (_, nm, _, _) -> nm
+                              |> Seq.fold (fun r s -> r + s + "\n") "")
                          (f, n, v, false)
                 |> Seq.toList
             match (悪魔 |> List.filter /> fun (_, _, _, ✿) -> not ✿
@@ -245,7 +250,8 @@ let Main(args) =
                         if File.Exists ntdb then File.Delete ntdb
                         File.Move(tdb, ntdb)
 
-        ❂ "-* press any key to close"
-        Console.ReadKey() |> ignore
+        if keypress then
+            ❂ "-* press any key to close"
+            Console.ReadKey() |> ignore
 
     0 (* Success *)
